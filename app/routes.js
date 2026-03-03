@@ -59,6 +59,23 @@ router.get("/api/user-info", authenticateToken, (req, res) => {
     (sum, session) => sum + session.duration,
     0
   );
+  const totalCalories = runningData.reduce(
+    (sum,session) => sum + session.caloriesBurned,
+    0
+  );
+
+  // 1. Extraire et trier les dates
+  const dates = runningData.map(item => new Date(item.date)).sort((a, b) => a - b);
+
+  // 2. Déterminer la plage de dates
+  const startDate = dates[0];
+  const endDate = dates[dates.length - 1];
+
+  // 3. Calculer le nombre total de jours dans la plage
+  const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+  // 4. Calculer le nombre de jours manquants
+  const totalDaysOff = totalDays - dates.length;
 
   // Extract user profile information
   const userProfile = {
@@ -69,6 +86,7 @@ router.get("/api/user-info", authenticateToken, (req, res) => {
     weight: user.userInfos.weight,
     height: user.userInfos.height,
     profilePicture: user.userInfos.profilePicture,
+    gender: user.userInfos.gender,
   };
 
   return res.json({
@@ -77,6 +95,8 @@ router.get("/api/user-info", authenticateToken, (req, res) => {
       totalDistance,
       totalSessions,
       totalDuration,
+      totalCalories,
+      totalDaysOff,
     },
   });
 });
